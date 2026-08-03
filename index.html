@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ============================================================
+     EDIT #1 — Browser tab title and search-engine description
+     ============================================================ -->
+<title>Rivera Lab — RNA regulation in development</title>
+<meta name="description" content="The Rivera Lab studies how RNA-binding proteins control cell fate decisions during vertebrate development.">
+
+<!-- Preview card when someone pastes your link into Slack/X/Bluesky.
+     The image path is relative to this file; put a 1200x630 px PNG at images/preview.png -->
+<meta property="og:title" content="Rivera Lab">
+<meta property="og:description" content="RNA regulation in development.">
+<meta property="og:image" content="images/preview.png">
+<meta property="og:type" content="website">
+
+<!-- Fonts. Delete these two lines if you want zero external dependencies;
+     the CSS below falls back to system fonts automatically. -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   DESIGN TOKENS — change these to restyle the whole site
+   ============================================================ */
+:root{
+  --ink:        #131922;   /* main text */
+  --ink-soft:   #5B6675;   /* secondary text */
+  --paper:      #F6F8FA;   /* page background */
+  --panel:      #0D141C;   /* dark hero background */
+  --rule:       #E1E6EC;   /* hairlines */
+
+  /* Three "channels", borrowed from fluorescence imaging.
+     They colour-code the research areas throughout the page. */
+  --ch-blue:    #3B72FF;
+  --ch-green:   #12A66B;
+  --ch-magenta: #D42A86;
+
+  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --body:    "Newsreader", Georgia, "Times New Roman", serif;
+  --mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --wide: 1120px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:72px}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--body); font-size:1.0625rem; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%; display:block}
+a{color:inherit}
+
+.wrap{max-width:var(--wide); margin:0 auto; padding:0 24px}
+
+/* Small uppercase mono label used above section headings */
+.eyebrow{
+  font-family:var(--mono); font-size:.6875rem; font-weight:500;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft);
+  margin:0 0 .5rem;
+}
+
+h2.section-title{
+  font-family:var(--display); font-weight:800; font-size:clamp(1.75rem,4vw,2.5rem);
+  letter-spacing:-.02em; line-height:1.1; margin:0 0 2rem;
+}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(246,248,250,.85); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--rule);
+}
+.topbar .wrap{display:flex; align-items:center; justify-content:space-between; height:60px; gap:16px}
+.brand{font-family:var(--display); font-weight:800; letter-spacing:-.02em; font-size:1.05rem; text-decoration:none}
+.brand span{color:var(--ch-magenta)}
+.nav{display:flex; gap:22px; flex-wrap:wrap}
+.nav a{
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.06em; text-transform:uppercase;
+  text-decoration:none; color:var(--ink-soft); padding:4px 0; border-bottom:1px solid transparent;
+}
+.nav a:hover{color:var(--ink); border-bottom-color:var(--ch-magenta)}
+
+/* ---------- hero ---------- */
+.hero{background:var(--panel); color:#EAF0F7; padding:clamp(64px,11vw,132px) 0}
+.hero .wrap{max-width:var(--wide)}
+.hero .eyebrow{color:#7F8CA0}
+
+/* The signature element: the lab name printed as three offset colour
+   channels that slide into registration on load, the way you'd align
+   DAPI/FITC/TRITC into a merge. */
+.merge{
+  position:relative; display:inline-block;
+  font-family:var(--display); font-weight:800;
+  font-size:clamp(2.5rem,8.5vw,6rem); line-height:1.02; letter-spacing:-.035em;
+  margin:0; color:#EDF3FA; isolation:isolate;
+}
+.merge::before,.merge::after{
+  content:attr(data-text); position:absolute; left:0; top:0;
+  mix-blend-mode:screen; pointer-events:none;
+}
+.merge::before{color:var(--ch-blue);    animation:align-b 1.5s cubic-bezier(.16,.84,.24,1) both}
+.merge::after {color:var(--ch-magenta); animation:align-m 1.5s cubic-bezier(.16,.84,.24,1) both .08s}
+.merge{animation:align-g 1.5s cubic-bezier(.16,.84,.24,1) both .04s}
+@keyframes align-b{from{transform:translate(-.09em,-.05em); opacity:0} to{transform:none; opacity:1}}
+@keyframes align-m{from{transform:translate(.09em,.05em);   opacity:0} to{transform:none; opacity:1}}
+@keyframes align-g{from{color:var(--ch-green)} to{color:#EDF3FA}}
+
+.hero-lede{
+  font-size:clamp(1.125rem,2.2vw,1.5rem); line-height:1.5; color:#C3CEDC;
+  max-width:44ch; margin:1.75rem 0 0;
+}
+.hero-meta{
+  font-family:var(--mono); font-size:.8125rem; color:#7F8CA0;
+  margin-top:2rem; padding-top:1.25rem; border-top:1px solid #22303F;
+}
+
+/* ---------- generic section ---------- */
+section{padding:clamp(56px,8vw,96px) 0}
+section + section{border-top:1px solid var(--rule)}
+
+/* ---------- research ---------- */
+.areas{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1px; background:var(--rule); border:1px solid var(--rule)}
+.area{background:var(--paper); padding:28px 24px 32px; position:relative; transition:background .2s}
+.area::before{content:""; position:absolute; left:0; top:0; height:3px; width:100%; background:var(--c)}
+.area:hover{background:#fff}
+.area h3{font-family:var(--display); font-weight:700; font-size:1.25rem; letter-spacing:-.015em; margin:.75rem 0 .5rem}
+.area .method{font-family:var(--mono); font-size:.6875rem; letter-spacing:.08em; text-transform:uppercase; color:var(--c)}
+.area p{margin:0; color:var(--ink-soft); font-size:1rem}
+
+/* ---------- people ---------- */
+.people{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:36px 28px}
+.person .avatar{
+  width:100%; aspect-ratio:1; border-radius:2px; object-fit:cover; background:#DDE3EA;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--display); font-weight:700; font-size:2rem; color:#8A97A6;
+  filter:grayscale(.25);
+}
+.person h3{font-family:var(--display); font-weight:700; font-size:1.0625rem; margin:.9rem 0 .1rem; letter-spacing:-.01em}
+.person .role{font-family:var(--mono); font-size:.6875rem; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft)}
+.person p{margin:.5rem 0 .4rem; font-size:.95rem; color:var(--ink-soft); line-height:1.5}
+.person .links a{font-family:var(--mono); font-size:.75rem; margin-right:10px; text-decoration:none; border-bottom:1px solid var(--rule)}
+.person .links a:hover{border-bottom-color:var(--ch-blue); color:var(--ch-blue)}
+
+/* ---------- publications ---------- */
+.pub-filters{display:flex; gap:8px; margin-bottom:2rem; flex-wrap:wrap}
+.pub-filters button{
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.05em; text-transform:uppercase;
+  background:none; border:1px solid var(--rule); color:var(--ink-soft);
+  padding:7px 14px; cursor:pointer; border-radius:2px;
+}
+.pub-filters button[aria-pressed="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.year-block{display:grid; grid-template-columns:88px 1fr; gap:0 24px; align-items:start}
+.year-block + .year-block{margin-top:2.25rem}
+.year-block .yr{font-family:var(--mono); font-size:.8125rem; color:var(--ink-soft); padding-top:.35rem; position:sticky; top:76px}
+.pub{padding:.35rem 0 1.1rem}
+.pub + .pub{border-top:1px solid var(--rule); padding-top:1.1rem}
+.pub .t{font-weight:500; display:block}
+.pub .a{color:var(--ink-soft); font-size:.95rem}
+.pub .a b{color:var(--ink); font-weight:500}
+.pub .j{font-family:var(--mono); font-size:.75rem; color:var(--ink-soft); display:block; margin-top:.35rem}
+.pub .j a{color:var(--ch-blue); text-decoration:none}
+.pub .j a:hover{text-decoration:underline}
+.pub .star{color:var(--ch-magenta)}
+
+/* ---------- join / contact ---------- */
+.two-col{display:grid; grid-template-columns:1fr 1fr; gap:56px}
+.two-col p{max-width:56ch}
+.status{
+  font-family:var(--mono); font-size:.8125rem; border:1px solid var(--rule);
+  border-left:3px solid var(--ch-green); padding:14px 16px; background:#fff; margin:1.5rem 0;
+}
+.addr{font-style:normal; font-family:var(--mono); font-size:.8125rem; line-height:1.9; color:var(--ink-soft)}
+.addr a{color:var(--ch-blue)}
+
+footer{border-top:1px solid var(--rule); padding:32px 0 56px; font-family:var(--mono); font-size:.75rem; color:var(--ink-soft)}
+footer .wrap{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+
+:focus-visible{outline:2px solid var(--ch-magenta); outline-offset:3px}
+
+@media (max-width:720px){
+  .two-col{grid-template-columns:1fr; gap:32px}
+  .year-block{grid-template-columns:1fr; gap:4px}
+  .year-block .yr{position:static}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none !important; transition:none !important}
+  .merge{color:#EDF3FA}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top">Rivera Lab<span>.</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="#research">Research</a>
+      <a href="#people">People</a>
+      <a href="#publications">Publications</a>
+      <a href="#join">Join</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================================================
+     EDIT #2 — Hero. The lab name is written once, in the <h1>.
+     A script at the bottom copies it into the colour channels.
+     ============================================================ -->
+<main id="top">
+<div class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Department of Molecular Biology · Example University</p>
+    <h1 class="merge">Rivera Lab</h1>
+    <p class="hero-lede">We study how RNA-binding proteins decide which transcripts a cell translates, and how those decisions commit a progenitor to one fate over another.</p>
+    <p class="hero-meta">Zebrafish &amp; human organoids · ribosome profiling · single-molecule imaging</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     EDIT #3 — Research areas. Add or remove an <article> block.
+     Change --c to any of the three channel colours.
+     ============================================================ -->
+<section id="research">
+  <div class="wrap">
+    <p class="eyebrow">Research</p>
+    <h2 class="section-title">Three questions we keep coming back to</h2>
+    <div class="areas">
+
+      <article class="area" style="--c:var(--ch-blue)">
+        <span class="method">Ribosome profiling · CLIP</span>
+        <h3>Selective translation in progenitors</h3>
+        <p>Transcript abundance predicts protein output poorly in dividing progenitors. We map where that decoupling happens and which RBPs impose it.</p>
+      </article>
+
+      <article class="area" style="--c:var(--ch-green)">
+        <span class="method">Live imaging · zebrafish</span>
+        <h3>Timing of fate commitment</h3>
+        <p>Following single cells from the last symmetric division onward, to ask whether commitment is a threshold event or a slow drift.</p>
+      </article>
+
+      <article class="area" style="--c:var(--ch-magenta)">
+        <span class="method">Organoids · optogenetics</span>
+        <h3>Perturbing condensates on demand</h3>
+        <p>Light-inducible clustering lets us assemble and dissolve RNP granules on a scale of seconds and read out the translational consequences.</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section id="people">
+  <div class="wrap">
+    <p class="eyebrow">People</p>
+    <h2 class="section-title">The lab</h2>
+    <div class="people" id="people-grid"></div>
+  </div>
+</section>
+
+<section id="publications">
+  <div class="wrap">
+    <p class="eyebrow">Publications</p>
+    <h2 class="section-title">Papers &amp; preprints</h2>
+    <div class="pub-filters" id="pub-filters">
+      <button data-filter="all" aria-pressed="true">All</button>
+      <button data-filter="selected" aria-pressed="false">Selected</button>
+      <button data-filter="preprint" aria-pressed="false">Preprints</button>
+    </div>
+    <div id="pub-list"></div>
+  </div>
+</section>
+
+<!-- ============================================================
+     EDIT #4 — Join + contact. Plain HTML, edit the text directly.
+     ============================================================ -->
+<section id="join">
+  <div class="wrap">
+    <div class="two-col">
+      <div>
+        <p class="eyebrow">Join</p>
+        <h2 class="section-title">Openings</h2>
+        <p>We read every email. If you write, tell us which result in one of our papers you don't believe, and why — that is a better first paragraph than a summary of your CV.</p>
+        <div class="status"><strong>Postdoc:</strong> one position open, start date flexible.<br><strong>Graduate students:</strong> rotations available each term.<br><strong>Undergraduates:</strong> currently full.</div>
+      </div>
+      <div id="contact">
+        <p class="eyebrow">Contact</p>
+        <h2 class="section-title">Find us</h2>
+        <address class="addr">
+          Rivera Lab, Room 418<br>
+          Life Sciences Building<br>
+          123 University Avenue<br>
+          City, ST 00000<br><br>
+          <a href="mailto:rivera@example.edu">rivera@example.edu</a><br>
+          <a href="https://scholar.google.com/">Google&nbsp;Scholar</a> ·
+          <a href="https://github.com/">GitHub</a> ·
+          <a href="https://bsky.app/">Bluesky</a>
+        </address>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year"></span> Rivera Lab · Example University</span>
+    <span>Built with plain HTML, hosted on GitHub Pages</span>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   EDIT #5 — YOUR DATA. Everything below the two arrays is
+   machinery you can ignore. Keep the commas and quotes intact.
+   ============================================================ */
+
+const PEOPLE = [
+  {
+    name: "Ana Rivera",
+    role: "Principal Investigator",
+    photo: "",                       // e.g. "images/rivera.jpg" — leave "" for initials
+    blurb: "PhD Stanford. Postdoc EMBL. Runs the lab, still pipettes on Fridays.",
+    links: { Email: "mailto:rivera@example.edu", Scholar: "https://scholar.google.com/", CV: "cv.pdf" }
+  },
+  {
+    name: "Marc Oduya",
+    role: "Postdoctoral Fellow",
+    photo: "",
+    blurb: "Single-molecule imaging of translation in live embryos.",
+    links: { Email: "mailto:oduya@example.edu", ORCID: "https://orcid.org/" }
+  },
+  {
+    name: "Wei Chen",
+    role: "Graduate Student",
+    photo: "",
+    blurb: "Optogenetic control of RNP granule assembly.",
+    links: { Email: "mailto:chen@example.edu" }
+  },
+  {
+    name: "Priya Nandakumar",
+    role: "Research Technician",
+    photo: "",
+    blurb: "Zebrafish facility, library prep, keeper of the freezer map.",
+    links: {}
+  }
+];
+
+const PUBLICATIONS = [
+  {
+    year: 2025,
+    authors: "Oduya M, Chen W, <b>Rivera A</b>",
+    title: "Light-induced RNP condensation transiently represses translation of fate-determining mRNAs",
+    venue: "bioRxiv 2025.04.11.612345",
+    url: "https://www.biorxiv.org/",
+    tags: ["preprint", "selected"]
+  },
+  {
+    year: 2024,
+    authors: "Chen W, Nandakumar P, <b>Rivera A</b>",
+    title: "Ribosome profiling across the last progenitor division reveals a translational switch",
+    venue: "Nature Cell Biology 26:1120–1133",
+    url: "https://doi.org/10.1000/example",
+    tags: ["selected"]
+  },
+  {
+    year: 2024,
+    authors: "Nandakumar P, <b>Rivera A</b>",
+    title: "A low-cost mounting protocol for long-term light-sheet imaging of zebrafish embryos",
+    venue: "Journal of Visualized Experiments 203:e65432",
+    url: "https://doi.org/10.1000/example",
+    tags: []
+  },
+  {
+    year: 2022,
+    authors: "<b>Rivera A</b>, Ito K, Feldman B",
+    title: "Sequence determinants of RBP occupancy in the vertebrate 3' UTR",
+    venue: "Molecular Cell 82:2201–2215",
+    url: "https://doi.org/10.1000/example",
+    tags: ["selected"]
+  }
+];
+
+/* ---------- machinery below ---------- */
+
+// Copy the lab name into the colour-channel layers.
+const h1 = document.querySelector(".merge");
+if (h1) h1.dataset.text = h1.textContent.trim();
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+// People
+const initials = n => n.split(/\s+/).map(w => w[0]).slice(0, 2).join("");
+document.getElementById("people-grid").innerHTML = PEOPLE.map(p => `
+  <div class="person">
+    ${p.photo
+      ? `<img class="avatar" src="${p.photo}" alt="${p.name}">`
+      : `<div class="avatar" role="img" aria-label="${p.name}">${initials(p.name)}</div>`}
+    <h3>${p.name}</h3>
+    <div class="role">${p.role}</div>
+    <p>${p.blurb || ""}</p>
+    <div class="links">${Object.entries(p.links || {})
+      .map(([label, href]) => `<a href="${href}">${label}</a>`).join("")}</div>
+  </div>`).join("");
+
+// Publications
+function renderPubs(filter) {
+  const shown = PUBLICATIONS.filter(p => filter === "all" || (p.tags || []).includes(filter));
+  const years = [...new Set(shown.map(p => p.year))].sort((a, b) => b - a);
+  document.getElementById("pub-list").innerHTML = years.map(y => `
+    <div class="year-block">
+      <div class="yr">${y}</div>
+      <div>${shown.filter(p => p.year === y).map(p => `
+        <div class="pub">
+          <span class="t">${(p.tags || []).includes("selected") ? '<span class="star" title="Selected">★</span> ' : ""}${p.title}</span>
+          <span class="a">${p.authors}</span>
+          <span class="j">${p.venue}${p.url ? ` · <a href="${p.url}">link</a>` : ""}</span>
+        </div>`).join("")}
+      </div>
+    </div>`).join("") || `<p class="a">Nothing here yet.</p>`;
+}
+renderPubs("all");
+
+document.getElementById("pub-filters").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  [...e.currentTarget.children].forEach(b => b.setAttribute("aria-pressed", b === btn));
+  renderPubs(btn.dataset.filter);
+});
+</script>
+</body>
+</html>
