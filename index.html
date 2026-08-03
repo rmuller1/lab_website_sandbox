@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rivera Lab — RNA regulation in development</title>
+<meta name="description" content="The Rivera Lab studies how RNA-binding proteins control cell fate decisions during vertebrate development.">
+<meta property="og:title" content="Rivera Lab">
+<meta property="og:description" content="RNA regulation in development.">
+<meta property="og:image" content="images/preview.png">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== NAV — identical on all five pages except aria-current ===== -->
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">Rivera Lab<span>.</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="research.html">Research</a>
+      <a href="people.html">People</a>
+      <a href="publications.html">Publications</a>
+      <a href="join.html">Join</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Department of Molecular Biology · Example University</p>
+    <h1 class="merge">Rivera Lab</h1>
+    <p class="hero-lede">We study how RNA-binding proteins decide which transcripts a cell translates, and how those decisions commit a progenitor to one fate over another.</p>
+    <p class="hero-meta">Zebrafish &amp; human organoids · ribosome profiling · single-molecule imaging</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Research</p>
+    <h2 class="section-title">Three questions we keep coming back to</h2>
+    <div class="areas">
+      <article class="area" style="--c:var(--ch-blue)">
+        <span class="method">Ribosome profiling · CLIP</span>
+        <h3>Selective translation in progenitors</h3>
+        <p>Transcript abundance predicts protein output poorly in dividing progenitors. We map where that decoupling happens and which RBPs impose it.</p>
+      </article>
+      <article class="area" style="--c:var(--ch-green)">
+        <span class="method">Live imaging · zebrafish</span>
+        <h3>Timing of fate commitment</h3>
+        <p>Following single cells from the last symmetric division onward, to ask whether commitment is a threshold event or a slow drift.</p>
+      </article>
+      <article class="area" style="--c:var(--ch-magenta)">
+        <span class="method">Organoids · optogenetics</span>
+        <h3>Perturbing condensates on demand</h3>
+        <p>Light-inducible clustering lets us assemble and dissolve RNP granules on a scale of seconds and read out the translational consequences.</p>
+      </article>
+    </div>
+    <p style="margin-top:2rem"><a class="more" href="research.html">Read more about the research →</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Recent</p>
+    <h2 class="section-title">Latest from the lab</h2>
+    <!-- data-limit="3" shows only the three newest entries from site.js -->
+    <div id="pub-list" data-limit="3"></div>
+    <p style="margin-top:2rem"><a class="more" href="publications.html">All publications →</a></p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span class="js-year"></span> Rivera Lab · Example University</span>
+    <span><a href="join.html">Contact</a> · Hosted on GitHub Pages</span>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

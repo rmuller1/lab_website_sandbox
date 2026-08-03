@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publications — Rivera Lab</title>
+<meta name="description" content="Papers and preprints from the Rivera Lab.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">Rivera Lab<span>.</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="research.html">Research</a>
+      <a href="people.html">People</a>
+      <a href="publications.html" aria-current="page">Publications</a>
+      <a href="join.html">Join</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Publications</p>
+    <h1>Papers &amp; preprints</h1>
+    <p>★ marks the papers we would hand someone who asked what the lab does. Preprints are posted before submission, not after acceptance.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="pub-filters" id="pub-filters">
+      <button data-filter="all" aria-pressed="true">All</button>
+      <button data-filter="selected" aria-pressed="false">Selected</button>
+      <button data-filter="preprint" aria-pressed="false">Preprints</button>
+    </div>
+    <!-- No data-limit here, so the full list renders -->
+    <div id="pub-list"></div>
+
+    <p style="margin-top:3rem; color:var(--ink-soft); font-size:.95rem; max-width:56ch">
+      A complete and automatically updated list is on
+      <a href="https://scholar.google.com/">Google Scholar</a> and
+      <a href="https://orcid.org/">ORCID</a>. PDFs are available on request if your institution lacks access.
+    </p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span class="js-year"></span> Rivera Lab · Example University</span>
+    <span><a href="join.html">Contact</a> · Hosted on GitHub Pages</span>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>
