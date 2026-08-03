@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data explorer — Rivera Lab</title>
+<meta name="description" content="Interactive volcano plot of differential expression results from the Rivera Lab.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<style>
+/* Page-specific styles. Kept here rather than in styles.css because
+   nothing else on the site uses them. */
+.explorer{display:grid; grid-template-columns:260px 1fr; gap:32px; align-items:start}
+.panel{
+  border:1px solid var(--rule); background:#fff; padding:20px;
+  font-family:var(--mono); font-size:.8125rem; position:sticky; top:76px;
+}
+.panel h3{
+  font-family:var(--mono); font-size:.6875rem; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-soft); margin:0 0 14px; font-weight:500;
+}
+.ctl{margin-bottom:20px}
+.ctl label{display:flex; justify-content:space-between; margin-bottom:6px; color:var(--ink-soft)}
+.ctl label b{color:var(--ink); font-weight:500}
+.ctl input[type=range]{width:100%; accent-color:var(--ch-magenta)}
+.ctl input[type=search]{
+  width:100%; font-family:var(--mono); font-size:.8125rem; padding:8px 10px;
+  border:1px solid var(--rule); border-radius:2px; background:var(--paper);
+}
+.tally{border-top:1px solid var(--rule); padding-top:14px; line-height:2}
+.tally .row{display:flex; justify-content:space-between; align-items:center}
+.tally .dot{width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:8px}
+.tally b{font-weight:500}
+.btn{
+  width:100%; margin-top:16px; font-family:var(--mono); font-size:.75rem;
+  letter-spacing:.05em; text-transform:uppercase; padding:9px;
+  background:var(--ink); color:var(--paper); border:1px solid var(--ink);
+  border-radius:2px; cursor:pointer;
+}
+.btn:hover{background:var(--ch-magenta); border-color:var(--ch-magenta)}
+
+.plot-wrap{position:relative}
+.plot-wrap svg{width:100%; height:auto; display:block; overflow:visible}
+.pt{cursor:pointer; transition:r .12s}
+.pt:hover{stroke:var(--ink); stroke-width:1.5}
+.ax{stroke:var(--rule)}
+.axtext{font-family:var(--mono); font-size:10px; fill:var(--ink-soft)}
+.axlabel{font-family:var(--mono); font-size:11px; fill:var(--ink-soft); letter-spacing:.06em}
+.thresh{stroke:var(--ink-soft); stroke-dasharray:3 4; stroke-width:1; opacity:.5}
+.hit{stroke:var(--ink); stroke-width:2; fill:none}
+.hitlabel{font-family:var(--mono); font-size:11px; fill:var(--ink); font-weight:500}
+
+.tip{
+  position:absolute; pointer-events:none; opacity:0; transition:opacity .1s;
+  background:var(--panel); color:#EAF0F7; padding:9px 11px; border-radius:3px;
+  font-family:var(--mono); font-size:.6875rem; line-height:1.7; white-space:nowrap;
+  transform:translate(-50%,-115%); z-index:5;
+}
+.tip b{color:#fff; font-size:.75rem}
+.tip .up{color:#FF7FC0} .tip .down{color:#8FB4FF}
+
+.note{
+  font-family:var(--mono); font-size:.75rem; line-height:1.7;
+  border:1px solid var(--rule); border-left:3px solid var(--ch-magenta);
+  background:#fff; padding:12px 14px; margin-bottom:24px;
+}
+.note code{background:var(--paper); padding:1px 5px; border-radius:2px}
+.summary{font-family:var(--mono); font-size:.75rem; color:var(--ink-soft); margin-top:14px}
+
+@media (max-width:820px){
+  .explorer{grid-template-columns:1fr}
+  .panel{position:static}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="index.html">Rivera Lab<span>.</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="research.html">Research</a>
+      <a href="people.html">People</a>
+      <a href="publications.html">Publications</a>
+      <a href="explore.html" aria-current="page">Data</a>
+      <a href="join.html">Join</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Data</p>
+    <h1>Explore the RNA-seq results</h1>
+    <p>Differential expression in sorted progenitors, mutant vs wild type. Move the thresholds and see which genes survive them.</p>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div id="note-slot"></div>
+
+    <div class="explorer">
+      <!-- controls -->
+      <div class="panel">
+        <h3>Thresholds</h3>
+
+        <div class="ctl">
+          <label for="q">Adjusted p &lt; <b id="q-val">0.05</b></label>
+          <input type="range" id="q" min="0" max="3" step="0.1" value="1.3">
+        </div>
+
+        <div class="ctl">
+          <label for="fc">|log₂ fold change| &gt; <b id="fc-val">1.0</b></label>
+          <input type="range" id="fc" min="0" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="ctl">
+          <label for="find">Find a gene</label>
+          <input type="search" id="find" placeholder="e.g. Rbfox" autocomplete="off">
+        </div>
+
+        <div class="tally">
+          <div class="row"><span><span class="dot" style="background:var(--ch-magenta)"></span>Up</span><b id="n-up">–</b></div>
+          <div class="row"><span><span class="dot" style="background:var(--ch-blue)"></span>Down</span><b id="n-down">–</b></div>
+          <div class="row"><span><span class="dot" style="background:#C3CBD4"></span>Not significant</span><b id="n-ns">–</b></div>
+        </div>
+
+        <button class="btn" id="dl">Download hits as CSV</button>
+      </div>
+
+      <!-- plot -->
+      <div class="plot-wrap" id="plot-wrap">
+        <svg id="plot" viewBox="0 0 760 470" role="img" aria-labelledby="plot-summary"></svg>
+        <div class="tip" id="tip"></div>
+        <p class="summary" id="plot-summary">Loading…</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span class="js-year"></span> Rivera Lab · Example University</span>
+    <span><a href="join.html">Contact</a> · Hosted on GitHub Pages</span>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+<script>
+/* ============================================================
+   Interactive volcano plot. No libraries — plain SVG built by
+   hand. Everything here runs in the visitor's browser; GitHub
+   Pages only ever hands over the files.
+   ============================================================ */
+
+const W = 760, H = 470, M = { t: 14, r: 18, b: 52, l: 62 };
+const svg  = document.getElementById("plot");
+const tip  = document.getElementById("tip");
+const wrap = document.getElementById("plot-wrap");
+const NS   = "http://www.w3.org/2000/svg";
+
+let GENES = [];
+
+// ---- load the data file ----------------------------------------------------
+// fetch() is blocked by the browser on file:// URLs, so this fails if you
+// double-click the .html. It works on GitHub Pages, and locally if you run
+//     python3 -m http.server
+// in this folder and visit http://localhost:8000
+fetch("data/deseq2_example.csv")
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+  .then(text => { GENES = parseCSV(text); draw(); })
+  .catch(err => {
+    showNote(
+      location.protocol === "file:"
+        ? `<b>Showing simulated data.</b> The browser blocks <code>fetch()</code> on <code>file://</code> URLs, so <code>data/deseq2_example.csv</code> could not be read. Run <code>python3 -m http.server</code> in this folder and open <code>http://localhost:8000/explore.html</code>, or push to GitHub Pages — both serve over HTTP and the real file will load.`
+        : `<b>Showing simulated data.</b> <code>data/deseq2_example.csv</code> did not load (${err.message}). On GitHub Pages this is almost always a filename case mismatch — the server is case-sensitive.`
+    );
+    GENES = simulate();
+    draw();
+  });
+
+function showNote(html) {
+  document.getElementById("note-slot").innerHTML = `<div class="note">${html}</div>`;
+}
+
+function parseCSV(text) {
+  const [head, ...lines] = text.trim().split(/\r?\n/);
+  const cols = head.split(",");
+  return lines.map(line => {
+    const v = line.split(",");
+    const o = {};
+    cols.forEach((c, i) => { o[c] = isNaN(v[i]) ? v[i] : +v[i]; });
+    return o;
+  });
+}
+
+// Fallback so the page still demonstrates something offline.
+function simulate() {
+  let s = 42;
+  const rnd = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const norm = () => Math.sqrt(-2 * Math.log(rnd() || 1e-9)) * Math.cos(2 * Math.PI * rnd());
+  return Array.from({ length: 420 }, (_, i) => {
+    const base = Math.pow(10, 0.6 + rnd() * 3.6);
+    const lfc = rnd() < 0.11
+      ? norm() * 0.4 + (rnd() < 0.5 ? -1 : 1) * (0.9 + rnd() * 2.1)
+      : norm() * 0.3;
+    const se = Math.hypot(0.3, 2.2 / Math.sqrt(base));
+    const z = Math.abs(lfc / se);
+    const p = Math.max(Math.exp(-0.5 * z * z) / (z * 2.5 + 1), 1e-30);
+    return { gene: "Sim" + (i + 1), baseMean: base, log2FoldChange: lfc, padj: Math.min(1, p * 8) };
+  });
+}
+
+// ---- draw ------------------------------------------------------------------
+const el = (tag, attrs) => {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+};
+const negLog = q => -Math.log10(Math.max(q, 1e-40));
+
+let X, Y, points = [];
+
+function draw() {
+  const xMax = Math.ceil(Math.max(...GENES.map(g => Math.abs(g.log2FoldChange))) * 1.05);
+  const yMax = Math.ceil(Math.max(...GENES.map(g => negLog(g.padj))) * 1.08);
+
+  X = v => M.l + ((v + xMax) / (2 * xMax)) * (W - M.l - M.r);
+  Y = v => H - M.b - (v / yMax) * (H - M.t - M.b);
+
+  svg.innerHTML = "";
+
+  // gridlines and ticks
+  for (let t = -xMax; t <= xMax; t++) {
+    svg.append(el("line", { class: "ax", x1: X(t), x2: X(t), y1: M.t, y2: H - M.b, opacity: t ? .5 : 1 }));
+    const lab = el("text", { class: "axtext", x: X(t), y: H - M.b + 18, "text-anchor": "middle" });
+    lab.textContent = t;
+    svg.append(lab);
+  }
+  const yStep = yMax > 24 ? 10 : yMax > 12 ? 5 : 2;
+  for (let t = 0; t <= yMax; t += yStep) {
+    svg.append(el("line", { class: "ax", x1: M.l, x2: W - M.r, y1: Y(t), y2: Y(t), opacity: .5 }));
+    const lab = el("text", { class: "axtext", x: M.l - 10, y: Y(t) + 3.5, "text-anchor": "end" });
+    lab.textContent = t;
+    svg.append(lab);
+  }
+
+  const xl = el("text", { class: "axlabel", x: (M.l + W - M.r) / 2, y: H - 12, "text-anchor": "middle" });
+  xl.textContent = "log₂ fold change  (mutant / wild type)";
+  svg.append(xl);
+  const yl = el("text", { class: "axlabel", transform: `translate(16 ${(M.t + H - M.b) / 2}) rotate(-90)`, "text-anchor": "middle" });
+  yl.textContent = "−log₁₀ adjusted p";
+  svg.append(yl);
+
+  // threshold guides, redrawn on every slider move
+  const gThresh = el("g", { id: "thresh" });
+  svg.append(gThresh);
+
+  // one circle per gene
+  points = GENES.map(g => {
+    const c = el("circle", {
+      class: "pt", cx: X(g.log2FoldChange), cy: Y(negLog(g.padj)),
+      r: 3.2 + Math.log10(g.baseMean) * 0.7, "fill-opacity": .78
+    });
+    c._g = g;
+    svg.append(c);
+    return c;
+  });
+
+  svg.append(el("g", { id: "hits" }));
+  update();
+}
+
+// ---- interactivity ---------------------------------------------------------
+const qSlider  = document.getElementById("q");
+const fcSlider = document.getElementById("fc");
+const findBox  = document.getElementById("find");
+
+function currentCutoffs() {
+  return {
+    q: Math.pow(10, -qSlider.value),   // slider is on the −log10 scale
+    fc: +fcSlider.value
+  };
+}
+
+function classify(g, cut) {
+  if (g.padj >= cut.q || Math.abs(g.log2FoldChange) <= cut.fc) return "ns";
+  return g.log2FoldChange > 0 ? "up" : "down";
+}
+
+const FILL = {
+  up:   getComputedStyle(document.body).getPropertyValue("--ch-magenta").trim(),
+  down: getComputedStyle(document.body).getPropertyValue("--ch-blue").trim(),
+  ns:   "#C3CBD4"
+};
+
+function update() {
+  const cut = currentCutoffs();
+  const n = { up: 0, down: 0, ns: 0 };
+
+  points.forEach(c => {
+    const k = classify(c._g, cut);
+    n[k]++;
+    c.setAttribute("fill", FILL[k]);
+    c.setAttribute("fill-opacity", k === "ns" ? .45 : .8);
+  });
+
+  document.getElementById("q-val").textContent  = cut.q < 0.001 ? cut.q.toExponential(0) : cut.q.toFixed(3);
+  document.getElementById("fc-val").textContent = cut.fc.toFixed(1);
+  document.getElementById("n-up").textContent   = n.up;
+  document.getElementById("n-down").textContent = n.down;
+  document.getElementById("n-ns").textContent   = n.ns;
+  document.getElementById("plot-summary").textContent =
+    `${GENES.length} genes tested. At adjusted p < ${cut.q.toPrecision(2)} and |log₂FC| > ${cut.fc.toFixed(1)}: ${n.up} up, ${n.down} down.`;
+
+  // threshold guides
+  const g = document.getElementById("thresh");
+  if (g) {
+    g.innerHTML = "";
+    g.append(el("line", { class: "thresh", x1: M.l, x2: W - M.r, y1: Y(negLog(cut.q)), y2: Y(negLog(cut.q)) }));
+    [-cut.fc, cut.fc].forEach(v => {
+      if (Math.abs(X(v) - X(0)) > 2)
+        g.append(el("line", { class: "thresh", x1: X(v), x2: X(v), y1: M.t, y2: H - M.b }));
+    });
+  }
+  highlight();
+}
+
+// hover tooltip
+svg.addEventListener("mouseover", e => {
+  const c = e.target.closest(".pt");
+  if (!c) return;
+  const g = c._g, dir = g.log2FoldChange > 0 ? "up" : "down";
+  tip.innerHTML = `<b>${g.gene}</b><br>
+    log₂FC <span class="${dir}">${g.log2FoldChange > 0 ? "+" : ""}${g.log2FoldChange.toFixed(2)}</span><br>
+    padj ${g.padj < 0.001 ? g.padj.toExponential(1) : g.padj.toFixed(3)}<br>
+    mean count ${Math.round(g.baseMean).toLocaleString()}`;
+  const r = c.getBoundingClientRect(), w = wrap.getBoundingClientRect();
+  tip.style.left = (r.left - w.left + r.width / 2) + "px";
+  tip.style.top  = (r.top  - w.top) + "px";
+  tip.style.opacity = 1;
+});
+svg.addEventListener("mouseout", e => { if (e.target.closest(".pt")) tip.style.opacity = 0; });
+
+// search
+function highlight() {
+  const layer = document.getElementById("hits");
+  if (!layer) return;
+  layer.innerHTML = "";
+  const term = findBox.value.trim().toLowerCase();
+  if (term.length < 2) return;
+  points
+    .filter(c => c._g.gene.toLowerCase().includes(term))
+    .slice(0, 12)
+    .forEach(c => {
+      const x = +c.getAttribute("cx"), y = +c.getAttribute("cy");
+      layer.append(el("circle", { class: "hit", cx: x, cy: y, r: +c.getAttribute("r") + 5 }));
+      const t = el("text", { class: "hitlabel", x: x + 10, y: y - 8 });
+      t.textContent = c._g.gene;
+      layer.append(t);
+    });
+}
+
+qSlider.addEventListener("input", update);
+fcSlider.addEventListener("input", update);
+findBox.addEventListener("input", highlight);
+
+// download whatever currently passes the thresholds
+document.getElementById("dl").addEventListener("click", () => {
+  const cut = currentCutoffs();
+  const hits = GENES.filter(g => classify(g, cut) !== "ns")
+                    .sort((a, b) => a.padj - b.padj);
+  const csv = ["gene,baseMean,log2FoldChange,padj,direction"]
+    .concat(hits.map(g => [
+      g.gene, g.baseMean.toFixed(2), g.log2FoldChange.toFixed(4),
+      g.padj.toExponential(3), g.log2FoldChange > 0 ? "up" : "down"
+    ].join(",")))
+    .join("\n");
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = `hits_padj${cut.q.toPrecision(2)}_lfc${cut.fc}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>
